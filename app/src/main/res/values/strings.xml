@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Rick And Morty</string> <!-- Ah, jeez, Rick -->
+    <string name="search">Search</string>
+    <string name="picture_of">Picture of %1$s</string>
+    <string name="name">Name</string>
+    <string name="species">Species</string>
+    <string name="status">Status</string>
+    <string name="origin">Origin</string>
+    <string name="type">Type</string>
+    <string name="created">Created</string>
+</resources>
