@@ -1,14 +1,17 @@
 package com.coalminesoftware.rickandmorty
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -18,7 +21,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,7 +35,7 @@ import com.coalminesoftware.rickandmorty.ui.theme.RickAndMortyTheme
 import java.time.Instant
 
 @Composable
-fun SearchScreen(detailsNavCallback: (Int)->Unit) {
+fun ScreenContext.SearchScreen() {
     val viewModel: SearchViewModel = viewModel()
     val searchQuery = viewModel.searchQuery.collectAsState()
     val searchResult by viewModel.characterResults.collectAsState()
@@ -48,9 +52,9 @@ fun SearchScreen(detailsNavCallback: (Int)->Unit) {
                 onValueChange = { viewModel.searchQuery.value = it },
                 label = { Text(stringResource(R.string.search)) },
                 modifier = Modifier.fillMaxWidth())
-            CircularProgressIndicator(modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .alpha(if (isLoading) 1f else 0f))
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterEnd))
+            }
         }
 
         LazyVerticalGrid(
@@ -60,18 +64,18 @@ fun SearchScreen(detailsNavCallback: (Int)->Unit) {
                 .weight(1f)
         ) {
             items(resultList) { character ->
-                CharacterCard(character, detailsNavCallback)
+                CharacterCard(character)
             }
         }
     }
 }
 
 @Composable
-fun CharacterCard(character: CharacterDetails, detailsNavCallback: (Int)->Unit) {
+fun ScreenContext.CharacterCard(character: CharacterDetails) {
     Card (modifier = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
-        .clickable(onClick = { detailsNavCallback(character.id) })
+        .clickable(onClick = { navController.navigate("details/${character.id}") })
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -79,9 +83,16 @@ fun CharacterCard(character: CharacterDetails, detailsNavCallback: (Int)->Unit) 
                 contentDescription = stringResource(R.string.picture_of, character.name),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize())
-            Text(
-                text = character.name,
-                modifier = Modifier.align(Alignment.BottomStart))
+            Box(
+                modifier = Modifier
+                    .padding(8.dp) // Outside
+                    .align(Alignment.BottomStart)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 12.dp) // Inside
+            ) {
+                Text(text = character.name)
+            }
         }
     }
 }
@@ -90,7 +101,7 @@ fun CharacterCard(character: CharacterDetails, detailsNavCallback: (Int)->Unit) 
 @Composable
 fun SearchScreenPreview() {
     RickAndMortyTheme {
-        SearchScreen {}
+        mockScreenContext().SearchScreen()
     }
 }
 
@@ -98,6 +109,6 @@ fun SearchScreenPreview() {
 @Composable
 fun CharacterCardPreview() {
     RickAndMortyTheme {
-        CharacterCard(CharacterDetails(0, "Rick", "", "", "", null, "https://rickandmortyapi.com/api/character/avatar/1.jpeg", Instant.now())) {}
+        mockScreenContext().CharacterCard(CharacterDetails(0, "Rick", "", "", "", null, "https://rickandmortyapi.com/api/character/avatar/1.jpeg", Instant.now()))
     }
 }
